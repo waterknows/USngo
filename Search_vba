@@ -1,0 +1,57 @@
+'vba function for search in a dataset, with a serach box and string contain
+Sub Search()
+   Dim LSearchRow As Integer
+   Dim LCopyToRow As Integer
+   Dim LSearchValue As String
+   On Error GoTo Err_Execute
+   Application.CopyObjectsWithCells = False
+    With Sheets("Search")
+        .Rows(2 & ":" & .Rows.Count).Delete
+    End With
+  
+   LSearchValue = InputBox("Please enter a value to search for.", "Enter value")
+
+   'Start search in row 2
+   LSearchRow = 2
+
+   'Start copying data to row 2 in Sheet2 (row counter variable)
+   LCopyToRow = 2
+
+   While Len(Range("A" & CStr(LSearchRow)).Value) > 0
+
+      'If value in column A = LSearchValue, copy entire row to Sheet2
+      If InStr(LCase(Range("A" & CStr(LSearchRow)).Value), LCase(LSearchValue)) > 0 Then
+         'Select row in Sheet1 to copy
+         Rows(CStr(LSearchRow) & ":" & CStr(LSearchRow)).Select
+         Selection.Copy
+
+         'Paste row into Sheet2 in next row
+         Sheets("Search").Select
+         Rows(CStr(LCopyToRow) & ":" & CStr(LCopyToRow)).Select
+         ActiveSheet.Paste
+
+         'Move counter to next row
+         LCopyToRow = LCopyToRow + 1
+
+         'Go back to Sheet1 to continue searching
+         Sheets("2015").Select
+
+      End If
+
+      LSearchRow = LSearchRow + 1
+
+   Wend
+
+   'Position on cell A3
+   Application.CutCopyMode = False
+   Range("A3").Select
+
+   MsgBox "All matching data has been copied."
+
+   Exit Sub
+
+Err_Execute:
+   MsgBox "An error occurred."
+   
+Application.CopyObjectsWithCells = True
+End Sub
