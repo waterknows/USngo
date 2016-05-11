@@ -1,0 +1,55 @@
+'VBA function for split a dataset accroding to the value of a column
+Sub Split()
+    Dim lr As Long
+    Dim ws As Worksheet
+    Dim vcol, i As Long
+    Dim icol As Long
+    Dim myarr As Variant
+    Dim title As String
+    Dim titlerow As Integer
+    Application.CopyObjectsWithCells = False
+    vcol = 17
+    Set ws = Sheets("filter")
+    lr = ws.Cells(ws.Rows.Count, vcol).End(xlUp).Row
+    title = "A1:Q1"
+    titlerow = ws.Range(title).Cells(1).Row
+    icol = ws.Columns.Count
+    ws.Cells(1, icol) = "Unique"
+    'delete exisiting sheets
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
+    For Each xWs In Application.ActiveWorkbook.Worksheets
+        If xWs.Name <> "Filter" And xWs.Name <> "2015" And xWs.Name <> "Market" And xWs.Name <> "Instruction" And xWs.Name <> "Source" Then
+            xWs.Delete
+        End If
+    Next
+    Application.DisplayAlerts = True
+    Application.ScreenUpdating = True
+
+    For i = 2 To lr
+        On Error Resume Next
+        If ws.Cells(i, vcol) <> "" And Application.WorksheetFunction.Match(ws.Cells(i, vcol), ws.Columns(icol), 0) = 0 Then
+        ws.Cells(ws.Rows.Count, icol).End(xlUp).Offset(1) = ws.Cells(i, vcol)
+        End If
+        Next
+        myarr = Application.WorksheetFunction.Transpose(ws.Columns(icol).SpecialCells(xlCellTypeConstants))
+        ws.Columns(icol).Clear
+        
+    For i = 2 To UBound(myarr)
+
+        ws.Range(title).AutoFilter field:=vcol, Criteria1:=myarr(i) & ""
+        If Not Evaluate("=ISREF('" & myarr(i) & "'!A1)") Then
+        Sheets.Add(after:=Worksheets(Worksheets.Count)).Name = myarr(i) & ""
+        Else
+        Sheets(myarr(i) & "").Move after:=Worksheets(Worksheets.Count)
+        End If
+        ws.Range("A" & titlerow & ":A" & lr).EntireRow.Copy Sheets(myarr(i) & "").Range("A1")
+        'auto fit first column and freeze first row
+        Sheets(myarr(i) & "").Columns("A").AutoFit
+        Rows("2:2").Select
+        ActiveWindow.FreezePanes = True
+    Next
+        ws.AutoFilterMode = False
+        ws.Activate
+Application.CopyObjectsWithCells = True
+End Sub
