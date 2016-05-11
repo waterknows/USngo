@@ -1,0 +1,20 @@
+'vba function for copying only fitered results to new sheet
+Sub Filter()
+    Dim rng As Excel.Range
+    Set rng = ThisWorkbook.Worksheets("2015").Cells.SpecialCells(xlCellTypeVisible)
+    
+    Application.CopyObjectsWithCells = False
+    Application.DisplayAlerts = False
+    ThisWorkbook.Sheets("Filter").Delete
+    Application.DisplayAlerts = True
+    With ThisWorkbook
+        .Sheets.Add.Name = "Filter"
+    End With
+    rng.Copy ThisWorkbook.Worksheets("Filter").Range("A1")
+    'Freeze first row and autofit first column
+    Rows("2:2").Select
+    ActiveWindow.FreezePanes = True
+    Sheets("Filter").Columns("A").AutoFit
+    Application.CopyObjectsWithCells = True
+End Sub
+
